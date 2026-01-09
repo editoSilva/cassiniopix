@@ -58,7 +58,7 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=2346352762227425&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
-  
+
 <!-- Eventos fb -->
 <!-- Código JavaScript para disparar eventos no clique -->
 <script>
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', function() {
                     addEventListeners(button);
                 });
-                button.dataset.listenerAdded = 'true'; 
+                button.dataset.listenerAdded = 'true';
             }
         });
     }, 1000);
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		body {
 		    font-family: '' Roboto Condensed', sans-serif';
 		}
-		
+
 		:root {
 		    --ci-primary-color: {{ $custom['cc_topo_botao'] }}; /* topo, botão, e icone*/
 		    --navtop-color-dark: {{ $custom['barra_logo'] }}; /* Barra do navegador logo*/
@@ -199,37 +199,37 @@ document.addEventListener('DOMContentLoaded', () => {
 		    --tw-ring-shadow: 0 0 #0000;
 		    --tw-shadow: 0 0 #0000;
 		    --tw-shadow-colored: 0 0 #0000;
-		
+
 		    --input-primary: #0c0c0c;
 		    --input-primary-dark: #0c0c0c;
-		
+
 		    --carousel-banners: #1F1F1E;
 		    --carousel-banners-dark: #1F1F1E;
-		
-		
+
+
 		    --sidebar-color: #1F1F1E !important
 		    --navtop-color #2C2B2B;
-		
-		
+
+
 		    --side-menu #FF4C1E;
 		    --side-menu-dark: #FF4C1E;
-		
+
 		    --footer-color #0A0A0A;
 		    --footer-color-dark: #0A0A0A;
-		
+
 		    --card-color #0c0c0c;
 		    --card-color-dark: #0c0c0c;
 		    --ci-promotion-color: #FCFDFC;
 		}
-		
+
 		.navtop-color {
 		    background-color: #1F1F1E !important;
 		}
-		
+
 		:is(.dark .navtop-color) {
 		    background-color: #1F1F1E !important;
 		}
-		
+
 		.bg-base {
 		    background-color: #1F1F1E;
 		}
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		        Livewire.emit('copiado');
 		    });
 		});
-		
+
 		window._token = '{{ csrf_token() }}';
 		if (localStorage.getItem('color-theme') === 'light') {
 		    document.documentElement.classList.remove('dark')
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		    !!$custom['custom_js'] !!
 		}
 	</script> @endif
-	
+
 <script>
 function checkTransactionStatus() {
     fetch('/suitpay/consult-status-transaction', {
