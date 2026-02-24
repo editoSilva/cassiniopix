@@ -69,6 +69,7 @@ Route::prefix('categories')
         include_once(__DIR__ . '/groups/api/categories/index.php');;
     });
 
+    
 include_once(__DIR__ . '/groups/api/games/index.php');
 include_once(__DIR__ . '/groups/api/gateways/digitopay.php');
 include_once(__DIR__ . '/groups/api/gateways/suitpay.php');
