@@ -28,9 +28,10 @@ libzip-dev \
 unzip \
 libpng-dev \
 libpq-dev \
-libxml2-dev
+libxml2-dev \
+libicu-dev
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql session xml
+RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql session xml intl
 
 
 # Install Nodejs
