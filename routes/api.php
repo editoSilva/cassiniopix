@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\Games\GameController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 use App\Traits\Gateways\EfiTrait;
+use Illuminate\Support\Facades\Cache;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -110,3 +113,12 @@ Route::prefix('spin')
         include_once(__DIR__ . '/groups/api/spin/index.php');
     })
     ->name('landing.spin.');
+
+
+
+    Route::get('teste-games', function() {
+        return Cache::get('opem-game');
+    });
+
+
+    Route::post('/trbplay/webhook', [GameController::class, 'webhookTrbPlay']);

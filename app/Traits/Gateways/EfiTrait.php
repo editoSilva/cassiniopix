@@ -59,77 +59,153 @@ trait EfiTrait
 
         public function payPix($request)
         {
-
+            $publicKey = 'S8h0sEt-96inMpO-yY74njV-46rrnG';
+            $secretKey = 'h6AtgMrN7s-ux2B0113T0-0kdxi3D7wK-gFOaEJbpVS-v49m6qPa8t-9c5r7';
             
-            
-         $txid = $this->gerarChavePixCustom(32); // Identificador único do pagamento (máx. 35 caracteres)
-
-         $token = $this->authEfi();
-
-
-             $postData =  json_encode([
-            'calendario' => [
-                'expiracao' => 86400
-            ],
-            'valor' => [
-                'original' => $request['amount']
-            ],
-            'chave' => "43961c38-58ed-4dec-844c-bd5f171e480d"
-        ]);
-
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://pix.api.efipay.com.br/v2/cob/'.$txid,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_SSLCERTTYPE => 'P12',
-            CURLOPT_SSLCERT => "/var/www/lojavirtual.p12", //'/var/www/VOLUTI_70.pfx',//'/var/www/html/api.neloreinvest.com/VOLUTI_70.pfx',
-            // CURLOPT_SSLCERTPASSWD => $data['password_in'],
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'PUT',
-                    CURLOPT_POSTFIELDS => $postData ,
-                        CURLOPT_HTTPHEADER => array(
-                        'Accept: application/json',
-                            "Authorization: Bearer $token",
-                        'Content-Type: application/json'
-            ),
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-
-         $responseData = json_decode($response, true);
-
-         $idUnico = $responseData['txid']; // ID único da transação retornado pela API
-         $externalId = 'efi_' . $idUnico; // Gerar um external_id único para associar a transação e o depósito
-
-            DB::transaction(function () use ($responseData, $request, $idUnico, $externalId) {
-                // Log::info('[vizzerpay] Iniciando transação e depósito', [
-                //     'transactionId' => $responseData['reference_code'],
-                //     'amount' => $request->input("amount"),
-                //     'external_id' => $externalId
-                // ]);
-
-                // Salvar a transação com o external_id
-                self::generateTransaction($responseData['txid'], $request['amount'], $externalId);
-
-                // Salvar o depósito com o external_id
-                self::generateDeposit($responseData['txid'], $request['amount'], $externalId);
-            });
+            // ===== CONFIGURAÇÕES =====
+            $baseUrl   = 'https://system.horizonbanking.com.br';
+            $urlPath   = '/api/orders/create_simple';
+   
+            $amount = $request['amount'];
+            // ===== PAYLOAD =====
+            $payload = [
+                'customId'  => $request['externalId'],
+                'amount'    => $amount,
+                'returnUrl' => '',
+                'type' => 'pix',
+                'customer'  => [
+                    'name'     => 'Edito Silva',
+                    'email'    => 'edito.desenvolvedor@gmail.com',
+                    'document' => '03366272546',
+                ],'paymentMethodForm' => [
+                    'docType'    => 'CPF',
+                    'document'   => '03366272546',
+                    'email'      => 'edito.desenvolvedor@gmail.com',
+                    'fullName'   => 'Edito Silva',
+                    'clientCode' => 'CUST-00015',
+                    'phone'      => '+5511918689508',
+                ]
+            ];
 
 
-            return response()->json([
-                'status' => true,
-                'transactionId' => $responseData['txid'], 
-                'qrcode' => $responseData['pixCopiaECola'] ?? null,
-                'externalId' => $externalId 
-            ]);
+            // ===== 1) BODY JSON (sem escapar barras) =====
+            $bodyString = json_encode($payload, JSON_UNESCAPED_SLASHES);
+
+            // ===== 2) BASE STRING (EXATO DA HORIZON) =====
+            $baseString = $bodyString . '&|&' . $urlPath;
+
+            // ===== 3) HMAC-SHA256 (HEX) =====
+            $hashHex = hash_hmac('sha256', $baseString, $secretKey);
+
+            // ===== 4) HEX → BASE64 =====
+            $signature = base64_encode($hashHex);
+
+            // ===== 5) REMOVE "=" =====
+            $signature = rtrim($signature, '=');
+
+
+
+            $response = Http::withHeaders([
+                'Content-Type'    => 'application/json',
+                'x-api-key'       => $publicKey,
+                'x-api-signature' => $signature,
+            ])->post($baseUrl . $urlPath, $payload);
+
+
+
+            $data = $response->json();
+
+            $qrCodePix = $data['data']['order']['invoice']['bankData']['payment']['qrCode'] ?? null;
+
+            if (!$qrCodePix) {
+                throw new \Exception('QR Code Pix não encontrado na resposta');
+            }
+
+
+            // Verificar a resposta
+            if ($response->successful()) {
+                return [
+                    'pix_qrcode' => $qrCodePix,
+                    'trxid' => $request['externalId'],
+                    'amount' => ($request['amount'] / 100),
+                ];
+
+            } else {
+                // Tratar erro
+                return response()->json([
+                    'error' => 'Erro ao processar o pagamento',
+                    'message' => $response->body(),
+                ], 404);
+            }
+
+            // $txid = $this->gerarChavePixCustom(32); // Identificador único do pagamento (máx. 35 caracteres)
+
+            // $token = $this->authEfi();
+
+
+            //     $postData =  json_encode([
+            //     'calendario' => [
+            //         'expiracao' => 86400
+            //     ],
+            //     'valor' => [
+            //         'original' => $request['amount']
+            //     ],
+            //     'chave' => "43961c38-58ed-4dec-844c-bd5f171e480d"
+            // ]);
+
+            // $curl = curl_init();
+
+            // curl_setopt_array($curl, array(
+            //     CURLOPT_URL => 'https://pix.api.efipay.com.br/v2/cob/'.$txid,
+            //     CURLOPT_RETURNTRANSFER => true,
+            //     CURLOPT_ENCODING => '',
+            //     CURLOPT_SSLCERTTYPE => 'P12',
+            //     CURLOPT_SSLCERT => "/var/www/lojavirtual.p12", //'/var/www/VOLUTI_70.pfx',//'/var/www/html/api.neloreinvest.com/VOLUTI_70.pfx',
+            //     // CURLOPT_SSLCERTPASSWD => $data['password_in'],
+            //     CURLOPT_SSL_VERIFYPEER => false,
+            //     CURLOPT_MAXREDIRS => 10,
+            //     CURLOPT_TIMEOUT => 0,
+            //     CURLOPT_FOLLOWLOCATION => true,
+            //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            //     CURLOPT_CUSTOMREQUEST => 'PUT',
+            //             CURLOPT_POSTFIELDS => $postData ,
+            //                 CURLOPT_HTTPHEADER => array(
+            //                 'Accept: application/json',
+            //                     "Authorization: Bearer $token",
+            //                 'Content-Type: application/json'
+            //     ),
+            // ));
+
+            // $response = curl_exec($curl);
+
+            // curl_close($curl);
+
+            // $responseData = json_decode($response, true);
+
+            // $idUnico = $responseData['txid']; // ID único da transação retornado pela API
+            // $externalId = 'efi_' . $idUnico; // Gerar um external_id único para associar a transação e o depósito
+
+            //     DB::transaction(function () use ($responseData, $request, $idUnico, $externalId) {
+            //         // Log::info('[vizzerpay] Iniciando transação e depósito', [
+            //         //     'transactionId' => $responseData['reference_code'],
+            //         //     'amount' => $request->input("amount"),
+            //         //     'external_id' => $externalId
+            //         // ]);
+
+            //         // Salvar a transação com o external_id
+            //         self::generateTransaction($responseData['txid'], $request['amount'], $externalId);
+
+            //         // Salvar o depósito com o external_id
+            //         self::generateDeposit($responseData['txid'], $request['amount'], $externalId);
+            //     });
+
+
+                return response()->json([
+                    'status' => true,
+                    'transactionId' => $responseData['txid'], 
+                    'qrcode' => $responseData['pixCopiaECola'] ?? null,
+                    'externalId' => $externalId 
+                ]);
 
 
            

@@ -11,13 +11,12 @@ use App\Models\Gateway;
 use App\Models\Provider;
 use App\Models\Wallet;
 use App\Traits\Providers\PlayFiverTrait;
-
-
+use App\Traits\Providers\TrbPlayTrait;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    use PlayFiverTrait;
+    use PlayFiverTrait, TrbPlayTrait;
 
     /**
      * @dev victormsalatiel
@@ -158,7 +157,7 @@ class GameController extends Controller
 
             switch ($game->distribution) {
                 case 'play_fiver':
-                    $playfiver = self::playFiverLaunch($game->game_id, $game->only_demo);
+                    $playfiver = self::gameLaunchIgt($game->game_id);
                     return response()->json([
                         'game' => $game,
                         'gameUrl' => $playfiver['launch_url'],
@@ -207,6 +206,11 @@ class GameController extends Controller
     public function webhookPlayFiver(Request $request)
     {
         return self::webhookPlayFiverAPI($request);
+    }
+
+    public function webhookTrbPlay(Request $request)
+    {
+        return self::webhookIgt($request);
     }
 
 

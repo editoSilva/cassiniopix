@@ -14,7 +14,7 @@
 	<meta name="og:type" content="website">
 	<meta name="og:description" content="Aposte com confiança no melhor site de apostas esportivas. No {{ env('APP_NAME') }}, você encontra promoções exclusivas, análises profissionais e suporte premium 24 horas 7 dias por semana. Comece a ganhar hoje!">
 	<meta name="build-version" content="multi-app">
-	<link rel="icon" type="image/png" href="https://imagedelivery.net/BgH9d8bzsn4n0yijn4h7IQ/4aa3f036-8bfb-475c-a805-f7e52954f900/mobile">
+	<link rel="icon" type="image/png" href="{{ asset('assets/images/logo_icon.png') }}">
 	<link rel="stylesheet" href="{{ asset('assets/css/fontawesome.min.css') }}">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	<!-- CSRF Token -->

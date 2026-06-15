@@ -4,6 +4,7 @@ use App\Models\Game;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Gateway\SuitPayController;
+use Illuminate\Support\Facades\Cache;
 
 // Em routes/web.php ou routes/api.php
 Route::post('/suitpay/consult-status-transaction', [SuitPayController::class, 'consultStatusTransactionPix']);
@@ -23,4 +24,8 @@ include_once(__DIR__ . '/groups/provider/playFiver.php');
 include_once(__DIR__ . '/groups/gateways/suitpay.php');
 include_once(__DIR__ . '/groups/auth/social.php');
 include_once(__DIR__ . '/groups/layouts/app.php');
+
+
+
+
 

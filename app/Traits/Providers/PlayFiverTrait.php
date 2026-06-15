@@ -58,6 +58,7 @@ trait PlayFiverTrait
             "user_rtp" => $user_rtp
 
         ];
+        
         $response = Http::withOptions([
             'curl' => [
                 CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
