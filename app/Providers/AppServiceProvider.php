@@ -5,6 +5,7 @@ namespace App\Providers;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Filament\Support\Assets\Js;
@@ -27,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
 //        FilamentAsset::register([
 //            Js::make('filament-tools', base_path('vendor/sebastiaankloos/filament-code-editor/dist/filament-tools.js')),
 //        ]);
+
+        if (config('app.env') !== 'local') {
+            URL::forceScheme('https');
+        }
 
         Schema::defaultStringLength(191);
 
